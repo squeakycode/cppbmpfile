@@ -67,7 +67,7 @@ Load and save BMP files for image processing.
 namespace cppbmpfile
 {
     /// Defines what pixels are used by an image.
-    enum class pixel_format
+    enum class pixel_format_type
     {
         Mono8,  //!< 8 Bit pixel data as uint8_t luminance values.
         BGR8,   //!< 24 Bit pixel data in the order uint8_t blue, uint8_t green, uint8_t red. Sometimes confusingly referred to as RGB.
@@ -89,7 +89,7 @@ namespace cppbmpfile
         uint32_t width = 0; //!< Width of the image in pixel.
         uint32_t height = 0; //!< Height of the image in lines.
         size_t line_padding = 0; //!< Additional bytes added to a line to align the beginning of a line to e.g. 4 bytes.
-        pixel_format pixel_format = pixel_format::invalid; //!< Defines what pixels are used by the image.
+        pixel_format_type pixel_format = pixel_format_type::invalid; //!< Defines what pixels are used by the image.
         orientation_type orientation = orientation_type::bottom_up; //!< Defines at which line the image starts.
     };
 
@@ -196,7 +196,7 @@ namespace cppbmpfile
             if (!(
                   the_image_properties.height == 0
                 || the_image_properties.width == 0
-                || the_image_properties.pixel_format == pixel_format::invalid
+                || the_image_properties.pixel_format == pixel_format_type::invalid
                 ))
             {
                 buffer_size = determine_stride(the_image_properties) * the_image_properties.height;
@@ -291,7 +291,7 @@ namespace cppbmpfile
                         }
                         else
                         {
-                            if (header.bits_per_pixel > 8 && (the_image_properties.pixel_format == pixel_format::BGR8 || the_image_properties.pixel_format == pixel_format::BGRA8))
+                            if (header.bits_per_pixel > 8 && (the_image_properties.pixel_format == pixel_format_type::BGR8 || the_image_properties.pixel_format == pixel_format_type::BGRA8))
                             {
                                 for (uint32_t line = 0; line < the_image_properties.height; ++line)
                                 {
@@ -321,7 +321,7 @@ namespace cppbmpfile
                                     }
                                 }
                             }
-                            else if (the_image_properties.pixel_format == pixel_format::Mono8)
+                            else if (the_image_properties.pixel_format == pixel_format_type::Mono8)
                             {
                                 bool linear_lut = check_is_linear_mono8(color_table);
                                 // read line by line, b == g == r in color table
@@ -360,7 +360,7 @@ namespace cppbmpfile
                                     }
                                 }
                             }
-                            else if (the_image_properties.pixel_format == pixel_format::BGR8 && header.bits_per_pixel == 8)
+                            else if (the_image_properties.pixel_format == pixel_format_type::BGR8 && header.bits_per_pixel == 8)
                             {
                                 // read line by line, b != g != r somewhere in color table
                                 std::vector<uint8_t> stride_buffer(stride_in_file);
@@ -427,7 +427,7 @@ namespace cppbmpfile
             else if (
                 the_image_properties.height == 0
                 || the_image_properties.width == 0
-                || the_image_properties.pixel_format == pixel_format::invalid
+                || the_image_properties.pixel_format == pixel_format_type::invalid
                 || the_image_properties.orientation == orientation_type::invalid
                 || buffersize == 0
                 || determine_stride(the_image_properties) == 0
@@ -466,15 +466,15 @@ namespace cppbmpfile
                         orientation_in_file = orientation_type::top_down;
                     }
                     header.num_planes = 1;
-                    if (the_image_properties.pixel_format == pixel_format::Mono8)
+                    if (the_image_properties.pixel_format == pixel_format_type::Mono8)
                     {
                         header.bits_per_pixel = 8;
                     }
-                    else if (the_image_properties.pixel_format == pixel_format::BGR8)
+                    else if (the_image_properties.pixel_format == pixel_format_type::BGR8)
                     {
                         header.bits_per_pixel = 24;
                     }
-                    else if (the_image_properties.pixel_format == pixel_format::BGRA8)
+                    else if (the_image_properties.pixel_format == pixel_format_type::BGRA8)
                     {
                         header.bits_per_pixel = 32;
                     }
@@ -489,7 +489,7 @@ namespace cppbmpfile
                     header.num_colors = 0;
                     header.important_colors = 0;
 
-                    if (the_image_properties.pixel_format == pixel_format::Mono8)
+                    if (the_image_properties.pixel_format == pixel_format_type::Mono8)
                     {
                         header.size += 256 * sizeof(color_table_entry);
                         header.offset += 256 * sizeof(color_table_entry);
@@ -508,7 +508,7 @@ namespace cppbmpfile
                         result = operation_result_type::file_write_error;
                     }
                     // write color table if needed
-                    if (result && the_image_properties.pixel_format == pixel_format::Mono8)
+                    if (result && the_image_properties.pixel_format == pixel_format_type::Mono8)
                     {
                         color_table_entry entry;
                         entry.reserved = 255;
@@ -643,15 +643,15 @@ namespace cppbmpfile
         static size_t determine_stride(const image_properties& the_image_properties)
         {
             size_t byte_per_pixel = 0;
-            if (the_image_properties.pixel_format == pixel_format::Mono8)
+            if (the_image_properties.pixel_format == pixel_format_type::Mono8)
             {
                 byte_per_pixel = 1;
             }
-            else if (the_image_properties.pixel_format == pixel_format::BGR8)
+            else if (the_image_properties.pixel_format == pixel_format_type::BGR8)
             {
                 byte_per_pixel = 3;
             }
-            else if (the_image_properties.pixel_format == pixel_format::BGRA8)
+            else if (the_image_properties.pixel_format == pixel_format_type::BGRA8)
             {
                 byte_per_pixel = 4;
             }
@@ -824,20 +824,20 @@ namespace cppbmpfile
             {
                 if (check_is_mono8(color_table_out))
                 {
-                    the_image_properties.pixel_format = pixel_format::Mono8;
+                    the_image_properties.pixel_format = pixel_format_type::Mono8;
                 }
                 else
                 {
-                    the_image_properties.pixel_format = pixel_format::BGR8;
+                    the_image_properties.pixel_format = pixel_format_type::BGR8;
                 }
             }
             else if (header.bits_per_pixel == 24)
             {
-                the_image_properties.pixel_format = pixel_format::BGR8;
+                the_image_properties.pixel_format = pixel_format_type::BGR8;
             }
             else if (header.bits_per_pixel == 32)
             {
-                the_image_properties.pixel_format = pixel_format::BGRA8;
+                the_image_properties.pixel_format = pixel_format_type::BGRA8;
             }
             else
             {

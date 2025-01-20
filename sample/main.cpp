@@ -12,7 +12,7 @@ int main()
     cppbmpfile::image_properties imagePropertiesA;
     imagePropertiesA.height = 480;
     imagePropertiesA.width = 640;
-    imagePropertiesA.pixel_format = cppbmpfile::pixel_format::Mono8;
+    imagePropertiesA.pixel_format = cppbmpfile::pixel_format_type::Mono8;
     imagePropertiesA.orientation = cppbmpfile::orientation_type::top_down;
     imagePropertiesA.line_padding = 0;
 

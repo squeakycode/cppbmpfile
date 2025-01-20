@@ -18,7 +18,7 @@ TEST_CASE("test invalid arguments", "[cpp_bmp_file]")
 
     props.height = test_file_height;
     props.width = test_file_width;
-    props.pixel_format = cppbmpfile::pixel_format::Mono8;
+    props.pixel_format = cppbmpfile::pixel_format_type::Mono8;
     props.orientation = cppbmpfile::orientation_type::bottom_up;
     props.line_padding = test_file_padding;
     size_t buffer_size = cppbmpfile::bmp_file::compute_buffer_size(props);
@@ -39,12 +39,12 @@ TEST_CASE("test invalid arguments", "[cpp_bmp_file]")
     CHECK(result.operator cppbmpfile::operation_result_type() == cppbmpfile::operation_result_type::invalid_argument);
     props.width = test_file_width;
 
-    props.pixel_format = cppbmpfile::pixel_format::invalid;
+    props.pixel_format = cppbmpfile::pixel_format_type::invalid;
     buffer_size = cppbmpfile::bmp_file::compute_buffer_size(props);
     CHECK(buffer_size == 0);
     result = cppbmpfile::bmp_file::save("dontcare", buffer.data(), buffer.size(), props);
     CHECK(result.operator cppbmpfile::operation_result_type() == cppbmpfile::operation_result_type::invalid_argument);
-    props.pixel_format = cppbmpfile::pixel_format::Mono8;
+    props.pixel_format = cppbmpfile::pixel_format_type::Mono8;
 
     props.orientation = cppbmpfile::orientation_type::invalid;
     buffer_size = cppbmpfile::bmp_file::compute_buffer_size(props);
@@ -104,7 +104,7 @@ TEST_CASE("test image properties", "[cpp_bmp_file]")
     CHECK(props.height == test_file_height);
     CHECK(props.width == test_file_width);
     CHECK(props.orientation == cppbmpfile::orientation_type::bottom_up);
-    CHECK(props.pixel_format == cppbmpfile::pixel_format::Mono8);
+    CHECK(props.pixel_format == cppbmpfile::pixel_format_type::Mono8);
     CHECK(props.line_padding == test_file_padding);
 
     result = cppbmpfile::bmp_file::load(TEST_DATA_ROOT_PATH "/testimages/Mono8_flipped.bmp", props);
@@ -112,7 +112,7 @@ TEST_CASE("test image properties", "[cpp_bmp_file]")
     CHECK(props.height == test_file_height);
     CHECK(props.width == test_file_width);
     CHECK(props.orientation == cppbmpfile::orientation_type::bottom_up); //test file to be adapted
-    CHECK(props.pixel_format == cppbmpfile::pixel_format::Mono8);
+    CHECK(props.pixel_format == cppbmpfile::pixel_format_type::Mono8);
     CHECK(props.line_padding == test_file_padding);
 
     result = cppbmpfile::bmp_file::load(TEST_DATA_ROOT_PATH "/testimages/BGR8.bmp", props);
@@ -120,7 +120,7 @@ TEST_CASE("test image properties", "[cpp_bmp_file]")
     CHECK(props.height == test_file_height);
     CHECK(props.width == test_file_width);
     CHECK(props.orientation == cppbmpfile::orientation_type::bottom_up);
-    CHECK(props.pixel_format == cppbmpfile::pixel_format::BGR8);
+    CHECK(props.pixel_format == cppbmpfile::pixel_format_type::BGR8);
     CHECK(props.line_padding == test_file_padding);
 
     result = cppbmpfile::bmp_file::load(TEST_DATA_ROOT_PATH "/testimages/256_color.bmp", props);
@@ -128,7 +128,7 @@ TEST_CASE("test image properties", "[cpp_bmp_file]")
     CHECK(props.height == test_file_height);
     CHECK(props.width == test_file_width);
     CHECK(props.orientation == cppbmpfile::orientation_type::bottom_up);
-    CHECK(props.pixel_format == cppbmpfile::pixel_format::BGR8);
+    CHECK(props.pixel_format == cppbmpfile::pixel_format_type::BGR8);
     CHECK(props.line_padding == test_file_padding);
 
     result = cppbmpfile::bmp_file::load(TEST_DATA_ROOT_PATH "/testimages/BGR8_flipped.bmp", props);
@@ -136,7 +136,7 @@ TEST_CASE("test image properties", "[cpp_bmp_file]")
     CHECK(props.height == test_file_height);
     CHECK(props.width == test_file_width);
     CHECK(props.orientation == cppbmpfile::orientation_type::bottom_up); //test file to be adapted
-    CHECK(props.pixel_format == cppbmpfile::pixel_format::BGR8);
+    CHECK(props.pixel_format == cppbmpfile::pixel_format_type::BGR8);
     CHECK(props.line_padding == test_file_padding);
 
     result = cppbmpfile::bmp_file::load(TEST_DATA_ROOT_PATH "/testimages/BGRA8.bmp", props);
@@ -144,7 +144,7 @@ TEST_CASE("test image properties", "[cpp_bmp_file]")
     CHECK(props.height == test_file_height);
     CHECK(props.width == test_file_width);
     CHECK(props.orientation == cppbmpfile::orientation_type::bottom_up);
-    CHECK(props.pixel_format == cppbmpfile::pixel_format::BGRA8);
+    CHECK(props.pixel_format == cppbmpfile::pixel_format_type::BGRA8);
     CHECK(props.line_padding == 0);
 
     result = cppbmpfile::bmp_file::load(TEST_DATA_ROOT_PATH "/testimages/BGRA8_flipped.bmp", props);
@@ -152,7 +152,7 @@ TEST_CASE("test image properties", "[cpp_bmp_file]")
     CHECK(props.height == test_file_height);
     CHECK(props.width == test_file_width);
     CHECK(props.orientation == cppbmpfile::orientation_type::bottom_up);  //test file to be adapted
-    CHECK(props.pixel_format == cppbmpfile::pixel_format::BGRA8);
+    CHECK(props.pixel_format == cppbmpfile::pixel_format_type::BGRA8);
     CHECK(props.line_padding == 0);
 }
 
@@ -167,7 +167,7 @@ TEST_CASE("test load mono8", "[cpp_bmp_file]")
     CHECK(props.height == test_file_height);
     CHECK(props.width == test_file_width);
     CHECK(props.orientation == cppbmpfile::orientation_type::bottom_up);
-    CHECK(props.pixel_format == cppbmpfile::pixel_format::Mono8);
+    CHECK(props.pixel_format == cppbmpfile::pixel_format_type::Mono8);
     CHECK(props.line_padding == test_file_padding);
 
     //check the test pattern
@@ -197,7 +197,7 @@ TEST_CASE("test load mono8 non linear color table", "[cpp_bmp_file]")
     CHECK(props.height == test_file_height);
     CHECK(props.width == test_file_width);
     CHECK(props.orientation == cppbmpfile::orientation_type::bottom_up);
-    CHECK(props.pixel_format == cppbmpfile::pixel_format::Mono8);
+    CHECK(props.pixel_format == cppbmpfile::pixel_format_type::Mono8);
     CHECK(props.line_padding == test_file_padding);
 
     //check the test pattern
@@ -235,7 +235,7 @@ TEST_CASE("test load bgr8", "[cpp_bmp_file]")
     CHECK(props.height == test_file_height);
     CHECK(props.width == test_file_width);
     CHECK(props.orientation == cppbmpfile::orientation_type::bottom_up);
-    CHECK(props.pixel_format == cppbmpfile::pixel_format::BGR8);
+    CHECK(props.pixel_format == cppbmpfile::pixel_format_type::BGR8);
     CHECK(props.line_padding == test_file_padding);
     static const size_t byte_per_pixel = 3;
 
@@ -277,7 +277,7 @@ TEST_CASE("test load bgra8", "[cpp_bmp_file]")
     CHECK(props.height == test_file_height);
     CHECK(props.width == test_file_width);
     CHECK(props.orientation == cppbmpfile::orientation_type::bottom_up);
-    CHECK(props.pixel_format == cppbmpfile::pixel_format::BGRA8);
+    CHECK(props.pixel_format == cppbmpfile::pixel_format_type::BGRA8);
     CHECK(props.line_padding == 0);
     static const size_t byte_per_pixel = 4;
 
@@ -325,7 +325,7 @@ TEST_CASE("test load 256 color", "[cpp_bmp_file]")
     CHECK(props.height == test_file_height);
     CHECK(props.width == test_file_width);
     CHECK(props.orientation == cppbmpfile::orientation_type::bottom_up);
-    CHECK(props.pixel_format == cppbmpfile::pixel_format::BGR8);
+    CHECK(props.pixel_format == cppbmpfile::pixel_format_type::BGR8);
     CHECK(props.line_padding == test_file_padding);
     static const size_t byte_per_pixel = 3;
 
@@ -406,7 +406,7 @@ TEST_CASE("test load save load mono8", "[cpp_bmp_file]")
 #if defined(WIN32)
     result = cppbmpfile::bmp_file::load(L"Mono8_out♥.bmp", bufferC.data(), bufferC.size(), propsC);
 #else
-    result = cppbmpfile::bmp_file::load("Mono8_out.bmp", bufferC.data(), bufferC.size(), propsC);
+    result = cppbmpfile::bmp_file::load("Mono8_out♥.bmp", bufferC.data(), bufferC.size(), propsC);
 #endif
     CHECK(result);
     CHECK(propsA.height == propsC.height);
