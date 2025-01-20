@@ -1,6 +1,6 @@
 // cppbmpfile - A lean C++ implementation for loading and saving BMP files.
 // Link: https://github.com/squeakycode/cppbmpfile
-// Version: 0.9.0
+// Version: 0.9.1
 // Minimum required C++ Standard: C++11
 // License: BSD 3-Clause License
 // 
@@ -61,7 +61,7 @@ Load and save BMP files for image processing.
 #include <fstream>
 #include <cassert>
 #include <cstdlib>
-#include <stdint.h>
+#include <cstdint>
 #include <vector>
 
 namespace cppbmpfile
@@ -188,7 +188,7 @@ namespace cppbmpfile
         /**
             \brief Computes the buffer size needed to hold the image data.
             \param[out] the_image_properties  The properties of the image.
-            \return Returns the buffer size or zero on invlaid arguments
+            \return Returns the buffer size or zero on invalid arguments
         */
         static size_t compute_buffer_size(image_properties& the_image_properties)
         {
@@ -233,16 +233,16 @@ namespace cppbmpfile
             \brief Loads the image and its properties.
             \param[in] filename  The name of the file.
             \param[out] buffer  The buffer to store the image data in.
-            \param[in] buffersize  The size of buffer.
+            \param[in] buffer_size  The size of buffer.
             \param[inout] the_image_properties  The properties of the image stored in the file. Used as input parameter if the force flags are set to true.
             \param[in] force_line_padding  Use the line padding set in the_image_properties instead.
             \param[in] force_orientation  Use the orientation set in the_image_properties instead.
             \return Returns information about the result of the operation.
         */
         template <typename char_type>
-        static operation_result load(const char_type* filename, void* buffer, size_t buffersize, image_properties& the_image_properties, bool force_line_padding = false, bool force_orientation = false)
+        static operation_result load(const char_type* filename, void* buffer, size_t buffer_size, image_properties& the_image_properties, bool force_line_padding = false, bool force_orientation = false)
         {
-            operation_result result(operation_result_type::ok);
+            operation_result result;
             bmp_header header = {};
             std::vector<color_table_entry> color_table;
 
@@ -278,7 +278,7 @@ namespace cppbmpfile
                     const size_t line_padding_in_file = determine_line_padding(header.bits_per_pixel, header.width);
                     const size_t image_size_in_buffer = stride_in_buffer * abs(header.height);
 
-                    if (image_size_in_buffer > buffersize)
+                    if (image_size_in_buffer > buffer_size)
                     {
                         result = operation_result_type::buffer_too_small;
                     }
@@ -304,7 +304,7 @@ namespace cppbmpfile
                                     {
                                         p_target += (the_image_properties.height - line - 1) * stride_in_buffer;
                                     }
-                                    file.read(reinterpret_cast<char*>(p_target), stride_in_file - line_padding_in_file);
+                                    file.read(reinterpret_cast<char*>(p_target), static_cast<std::streamsize>(stride_in_file - line_padding_in_file));
                                     if (!file)
                                     {
                                         result = operation_result_type::file_read_error;
@@ -312,7 +312,7 @@ namespace cppbmpfile
                                     }
                                     if (line_padding_in_file)
                                     {
-                                        file.seekg(line_padding_in_file, std::ios_base::cur);
+                                        file.seekg(static_cast<std::streamsize>(line_padding_in_file), std::ios_base::cur);
                                         if (!file)
                                         {
                                             result = operation_result_type::file_write_error;
@@ -336,7 +336,7 @@ namespace cppbmpfile
                                     {
                                         p_target += (the_image_properties.height - line - 1) * stride_in_buffer;
                                     }
-                                    file.read(reinterpret_cast<char*>(p_target), stride_in_file - line_padding_in_file);
+                                    file.read(reinterpret_cast<char*>(p_target), static_cast<std::streamsize>(stride_in_file - line_padding_in_file));
                                     if (!file)
                                     {
                                         result = operation_result_type::file_read_error;
@@ -351,7 +351,7 @@ namespace cppbmpfile
                                     }
                                     if (line_padding_in_file)
                                     {
-                                        file.seekg(line_padding_in_file, std::ios_base::cur);
+                                        file.seekg(static_cast<std::streamsize>(line_padding_in_file), std::ios_base::cur);
                                         if (!file)
                                         {
                                             result = operation_result_type::file_write_error;
@@ -366,7 +366,7 @@ namespace cppbmpfile
                                 std::vector<uint8_t> stride_buffer(stride_in_file);
                                 for (int32_t line = 0; line < abs(header.height); ++line)
                                 {
-                                    file.read(reinterpret_cast<char*>(stride_buffer.data()), stride_buffer.size());
+                                    file.read(reinterpret_cast<char*>(stride_buffer.data()), static_cast<std::streamsize>(stride_buffer.size()));
                                     if (file.gcount() != static_cast<std::streamsize>(stride_buffer.size()))
                                     {
                                         result = operation_result_type::file_read_error;
@@ -408,13 +408,13 @@ namespace cppbmpfile
             \brief Save the image and its properties.
             \param[in] filename  The name of the file.
             \param[in] buffer  The buffer holding the image data.
-            \param[in] buffersize  The size of buffer.
+            \param[in] buffer_size  The size of buffer.
             \param[in] the_image_properties  The properties of the image.
             \param[in] force_bottom_up  Force bottom up when saving to disk for best compatibility.
             \return Returns information about the result of the operation.
         */
         template <typename char_type>
-        static operation_result save(const char_type* filename, const void* buffer, size_t buffersize, const image_properties& the_image_properties, bool force_bottom_up = true)
+        static operation_result save(const char_type* filename, const void* buffer, size_t buffer_size, const image_properties& the_image_properties, bool force_bottom_up = true)
         {
             operation_result result(operation_result_type::ok);
             bmp_header header = {};
@@ -429,13 +429,13 @@ namespace cppbmpfile
                 || the_image_properties.width == 0
                 || the_image_properties.pixel_format == pixel_format_type::invalid
                 || the_image_properties.orientation == orientation_type::invalid
-                || buffersize == 0
+                || buffer_size == 0
                 || determine_stride(the_image_properties) == 0
                 )
             {
                 result = operation_result_type::invalid_argument;
             }
-            else if (determine_stride(the_image_properties) * the_image_properties.height > buffersize)
+            else if (determine_stride(the_image_properties) * the_image_properties.height > buffer_size)
             {
                 result = operation_result_type::buffer_too_small;
             }
@@ -451,7 +451,7 @@ namespace cppbmpfile
                     const size_t stride_in_buffer = determine_stride(the_image_properties);
                     orientation_type orientation_in_file = orientation_type::bottom_up;
 
-                    // fill in intial values
+                    // fill in initial values
                     header.type = 0x4D42;
                     header.size = sizeof(bmp_header);
                     header.reserved1 = 0;
@@ -510,8 +510,7 @@ namespace cppbmpfile
                     // write color table if needed
                     if (result && the_image_properties.pixel_format == pixel_format_type::Mono8)
                     {
-                        color_table_entry entry;
-                        entry.reserved = 255;
+                        color_table_entry entry = { 0, 0, 0, 255 };
                         for (size_t i = 0; i < 256; ++i)
                         {
                             entry.b = entry.g = entry.r = static_cast<uint8_t>(i);
@@ -523,7 +522,7 @@ namespace cppbmpfile
                             }
                         }
                     }
-                    // write image data, linewise
+                    // write image data, line wise
                     const size_t line_padding_in_file = determine_line_padding(header.bits_per_pixel, header.width);
                     for (uint32_t line = 0; line < the_image_properties.height; ++line)
                     {
@@ -536,7 +535,7 @@ namespace cppbmpfile
                         {
                             p_source += (the_image_properties.height - line - 1) * stride_in_buffer;
                         }
-                        file.write(reinterpret_cast<const char*>(p_source), stride_in_buffer - the_image_properties.line_padding);
+                        file.write(reinterpret_cast<const char*>(p_source), static_cast<std::streamsize>(stride_in_buffer - the_image_properties.line_padding));
                         if (!file)
                         {
                             result = operation_result_type::file_write_error;
@@ -545,7 +544,7 @@ namespace cppbmpfile
                         if (line_padding_in_file && line_padding_in_file <= 4)
                         {
                             const uint32_t padding = 0;
-                            file.write(reinterpret_cast<const char*>(&padding), line_padding_in_file);
+                            file.write(reinterpret_cast<const char*>(&padding), static_cast<std::streamsize>(line_padding_in_file));
                             if (!file)
                             {
                                 result = operation_result_type::file_write_error;
@@ -682,7 +681,7 @@ namespace cppbmpfile
                 // header.reserved2; -> ignored
                 // header.offset; -> checked
                 // header.dib_header_size; -> checked
-                // header.widthx; -> checked
+                // header.width; -> checked
                 // header.height; -> checked
                 // header.num_planes; -> ignored, not used for bmp
                 // header.bits_per_pixel; -> checked
@@ -771,10 +770,10 @@ namespace cppbmpfile
                     color_table_out.resize(256);
                 }
 
-                if (color_table_out.size() != 0)
+                if (!color_table_out.empty())
                 {
                     const size_t size_of_color_table_bytes = color_table_out.size() * sizeof(color_table_entry);
-                    stream.read(reinterpret_cast<char*>(color_table_out.data()), size_of_color_table_bytes);
+                    stream.read(reinterpret_cast<char*>(color_table_out.data()), static_cast<std::streamsize>(size_of_color_table_bytes));
                     if (!stream)
                     {
                         result = operation_result_type::file_read_error;
